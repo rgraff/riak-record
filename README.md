@@ -1,7 +1,7 @@
 # riak-record
 
 RiakRecord is a thin and immature wrapper around riak-ruby-client. It creates a bucket for
-each class, a simple finder, and reader attributes.
+each class, provides a simple finder, and creates attribute reader.
 
 ## Usage
 
@@ -14,16 +14,14 @@ class ExampleRecord < RiakRecord
   bucket_name 'example_a'
   record_attributes :attribute1, :attribute2
 end
-```
 
-```ruby
-  ExampleRecord.find("a-key") #> Instance of ExampleRecord
-  ExampleRecord.find(["a-key","b-key"]) #> Array of ExampleRecords returned
+ExampleRecord.find("a-key") #> Instance of ExampleRecord
+ExampleRecord.find(["a-key","b-key"]) #> Array of ExampleRecords returned
 
-  record = ExampleRecord.find("a-key")
-  record.riak_object #> directly access Riak::RObject
-  record.data #> same as record.riak_object.data
-  record.attribute1 #> record.riak_object.data[:attribute1]
+record = ExampleRecord.find("a-key")
+record.riak_object #> directly access Riak::RObject
+record.data #> same as record.riak_object.data
+record.attribute1 #> record.riak_object.data[:attribute1]
 ```
 
 
