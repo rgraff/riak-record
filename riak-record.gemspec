@@ -28,6 +28,7 @@ Gem::Specification.new do |s|
     "Rakefile",
     "VERSION",
     "lib/riak-record.rb",
+    "riak-record.gemspec",
     "spec/riak-record_spec.rb",
     "spec/spec_helper.rb"
   ]
