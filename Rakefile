@@ -17,8 +17,9 @@ Jeweler::Tasks.new do |gem|
   gem.name = "riak-record"
   gem.homepage = "http://github.com/rgraff/riak-record"
   gem.license = "MIT"
-  gem.summary = %Q{TODO: one-line summary of your gem}
-  gem.description = %Q{TODO: longer description of your gem}
+  gem.summary = "A wrapper around ruby-client."
+  gem.description = "RiakRecord is a thin and immature wrapper around riak-ruby-client. It creates a bucket for
+  each class, provides a simple finder, and creates attribute reader."
   gem.email = "robert_graff@yahoo.com"
   gem.authors = ["Robert Graff"]
   # dependencies defined in Gemfile
