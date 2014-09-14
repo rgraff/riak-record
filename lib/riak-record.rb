@@ -1,6 +1,4 @@
 class RiakRecord
-  VERSION = "0.0.0.1"
-
   attr_reader :riak_object
 
   def initialize(riak_object)
