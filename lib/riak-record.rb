@@ -15,7 +15,7 @@ class RiakRecord
   end
 
   def self.bucket
-    @bucket ||= riak_client.bucket(@bucket_name)
+    @bucket ||= client.bucket(@bucket_name)
   end
 
   def self.record_attributes(*attributes)
