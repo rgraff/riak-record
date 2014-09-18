@@ -14,16 +14,16 @@ class RiakRecord
   end
 
   def save
-    riak_object.store
+    riak_object.store(:returnbody => false)
   end
 
   def self.bucket_name(name = :not_a_name)
     @bucket_name = name unless name == :not_a_name
-    @bucket_name
+    namespace.present? ? namespace+":-:"+@bucket_name : @bucket_name
   end
 
   def self.bucket
-    @bucket ||= client.bucket(@bucket_name)
+    @bucket ||= client.bucket(bucket_name)
   end
 
   def self.record_attributes(*attributes)
@@ -55,6 +55,15 @@ class RiakRecord
   def self.find_many(keys)
     hash = bucket.get_many(keys.map(&:to_s))
     keys.map{ |k| hash[k] }
+  end
+
+  @@namespace = nil
+  def self.namespace=(namespace)
+    @@namespace = namespace
+  end
+
+  def self.namespace
+    @@namespace
   end
 
   def self.client=(client)

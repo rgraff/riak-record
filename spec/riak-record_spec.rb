@@ -92,4 +92,11 @@ describe "RiakRecord" do
     end
 
   end
+
+  describe "namespacing buckets" do
+    it "should prepend namespace to bucket name" do
+      RiakRecord.namespace = "namespace_test"
+      expect(ExampleA.bucket_name).to eq("namespace_test:-:example_a")
+    end
+  end
 end
