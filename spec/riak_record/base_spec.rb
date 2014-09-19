@@ -2,7 +2,7 @@ require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 
 class ExampleA < RiakRecord::Base
   bucket_name 'example_a'
-  record_attributes :attribute1, :attribute2
+  data_attributes :attribute1, :attribute2
 end
 
 class ExampleB < RiakRecord::Base

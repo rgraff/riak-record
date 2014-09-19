@@ -27,8 +27,8 @@ module RiakRecord
       @bucket ||= client.bucket(bucket_name)
     end
 
-    def self.record_attributes(*attributes)
-      attributes.each do |method_name|
+    def self.data_attributes(*attributes)
+      attributes.map(&:to_sym).each do |method_name|
         define_method(method_name) do
             data[method_name]
         end

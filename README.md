@@ -13,7 +13,7 @@ RiakRecord::Base.namespace = 'staging' # optional. Namespaces buckets
 
 class ExampleRecord < RiakRecord::Base
   bucket_name :example_a
-  record_attributes :attribute1, :attribute2
+  data_attributes :attribute1, :attribute2
 end
 
 ExampleRecord.find("a-key") #> Instance of ExampleRecord
