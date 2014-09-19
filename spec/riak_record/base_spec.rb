@@ -1,15 +1,15 @@
-require File.expand_path(File.dirname(__FILE__) + '/spec_helper')
+require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 
-class ExampleA < RiakRecord
+class ExampleA < RiakRecord::Base
   bucket_name 'example_a'
   record_attributes :attribute1, :attribute2
 end
 
-class ExampleB < RiakRecord
+class ExampleB < RiakRecord::Base
   bucket_name 'example_b'
 end
 
-describe "RiakRecord" do
+describe RiakRecord::Base do
   it "should set the bucket name on each instance of RiakRecord class" do
     expect(ExampleA.bucket_name).to eq('example_a')
     expect(ExampleB.bucket_name).to eq('example_b')
@@ -95,7 +95,7 @@ describe "RiakRecord" do
 
   describe "namespacing buckets" do
     it "should prepend namespace to bucket name" do
-      RiakRecord.namespace = "namespace_test"
+      RiakRecord::Base.namespace = "namespace_test"
       expect(ExampleA.bucket_name).to eq("namespace_test:-:example_a")
     end
   end

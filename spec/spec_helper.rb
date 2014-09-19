@@ -18,9 +18,9 @@ $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
 $LOAD_PATH.unshift(File.dirname(__FILE__))
 
 require 'rspec'
-require 'riak-record'
+require 'riak_record'
 
-RiakRecord.client = Riak::Client.new(:host => 'localhost', :pb_port => '8087')
+RiakRecord::Base.client = Riak::Client.new(:host => 'localhost', :pb_port => '8087')
 
 # Requires supporting files with custom matchers and macros, etc,
 # in ./support/ and its subdirectories.

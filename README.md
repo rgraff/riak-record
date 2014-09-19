@@ -8,10 +8,10 @@ each class, provides a simple finder, and creates attribute reader.
 ```ruby
 require 'riak-record'
 
-RiakRecord.client = Riak::Client.new
-RiakRecord.namespace = 'staging' # optional. Namespaces buckets
+RiakRecord::Base.client = Riak::Client.new
+RiakRecord::Base.namespace = 'staging' # optional. Namespaces buckets
 
-class ExampleRecord < RiakRecord
+class ExampleRecord < RiakRecord::Base
   bucket_name 'example_a'
   record_attributes :attribute1, :attribute2
 end
