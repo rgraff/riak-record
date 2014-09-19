@@ -6,7 +6,7 @@ class ExampleA < RiakRecord::Base
 end
 
 class ExampleB < RiakRecord::Base
-  bucket_name 'example_b'
+  bucket_name :example_b
 end
 
 describe RiakRecord::Base do

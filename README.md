@@ -12,7 +12,7 @@ RiakRecord::Base.client = Riak::Client.new
 RiakRecord::Base.namespace = 'staging' # optional. Namespaces buckets
 
 class ExampleRecord < RiakRecord::Base
-  bucket_name 'example_a'
+  bucket_name :example_a
   record_attributes :attribute1, :attribute2
 end
 

@@ -19,7 +19,7 @@ module RiakRecord
     end
 
     def self.bucket_name(name = :not_a_name)
-      @bucket_name = name unless name == :not_a_name
+      @bucket_name = name.to_s unless name == :not_a_name
       namespace.present? ? namespace+":-:"+@bucket_name : @bucket_name
     end
 
