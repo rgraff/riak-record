@@ -14,6 +14,10 @@ module RiakRecord
       riak_object.data
     end
 
+    def indexes
+      riak_object.indexes
+    end
+
     def save
       riak_object.store(:returnbody => false)
     end
@@ -35,6 +39,30 @@ module RiakRecord
 
         define_method("#{method_name}=".to_sym) do |value|
           data[method_name] = value
+        end
+      end
+    end
+
+    def self.index_int_attributes(*attributes)
+      attributes.map(&:to_sym).each do |method_name|
+        define_method(method_name) do
+          indexes["#{method_name}_int"]
+        end
+
+        define_method("#{method_name}=".to_sym) do |value|
+          indexes["#{method_name}_int"] = Array(value).map(&:to_i)
+        end
+      end
+    end
+
+    def self.index_bin_attributes(*attributes)
+      attributes.map(&:to_sym).each do |method_name|
+        define_method(method_name) do
+          indexes["#{method_name}_bin"]
+        end
+
+        define_method("#{method_name}=".to_sym) do |value|
+          indexes["#{method_name}_bin"] = Array(value).map(&:to_s)
         end
       end
     end

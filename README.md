@@ -14,6 +14,8 @@ RiakRecord::Base.namespace = 'staging' # optional. Namespaces buckets
 class ExampleRecord < RiakRecord::Base
   bucket_name :example_a
   data_attributes :attribute1, :attribute2
+  index_int_attributes :index1, :index2
+  index_bin_attributes :index3
 end
 
 ExampleRecord.find("a-key") #> Instance of ExampleRecord
@@ -24,7 +26,9 @@ record.riak_object #> directly access Riak::RObject
 record.data #> same as record.riak_object.data
 record.attribute1 #> record.riak_object.data[:attribute1]
 record.attribute1 = 'name'
+record.index1 = 1 #> record.riak_object.indexes["index1_int"] = [1]
 record.save  #> record.riak_object.store
+
 ```
 
 

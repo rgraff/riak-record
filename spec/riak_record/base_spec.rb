@@ -3,6 +3,8 @@ require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 class ExampleA < RiakRecord::Base
   bucket_name 'example_a'
   data_attributes :attribute1, :attribute2
+  index_int_attributes :index1, :index2
+  index_bin_attributes :index3, :index4
 end
 
 class ExampleB < RiakRecord::Base
@@ -72,7 +74,7 @@ describe RiakRecord::Base do
     end
   end
 
-  describe "record_attributes" do
+  describe "data_attributes" do
     let(:riak_object) { Riak::RObject.new("obj").tap{|r| r.data = data } }
     let(:data) { {:attribute1 => "1"} }
     let(:record) { ExampleA.new(riak_object) }
@@ -91,6 +93,50 @@ describe RiakRecord::Base do
       expect( ExampleA.new(riak_object).attribute1 ).to eq("1")
     end
 
+  end
+
+  describe "index_int_attributes" do
+    let(:riak_object) { Riak::RObject.new("obj").tap{|r| r.indexes["index1_int"] = [1] } }
+    let(:record) { ExampleA.new(riak_object) }
+    it "should read and write each index" do
+      expect{
+        record.index1=[2]
+      }.to change{record.riak_object.indexes["index1_int"]}.from([1]).to([2])
+    end
+
+    it "should handle non arrays" do
+      expect{
+        record.index2=2
+      }.to change{record.index2}.from([]).to([2])
+    end
+
+    it "should handle nil" do
+      expect{
+        record.index1 = nil
+      }.to change{record.index1}.from([1]).to([])
+    end
+  end
+
+  describe "index_bin_attributes" do
+    let(:riak_object) { Riak::RObject.new("obj").tap{|r| r.indexes["index3_bin"] = ['apple'] } }
+    let(:record) { ExampleA.new(riak_object) }
+    it "should read and write each index" do
+      expect{
+        record.index3=['mac']
+      }.to change{record.riak_object.indexes["index3_bin"]}.from(['apple']).to(['mac'])
+    end
+
+    it "should handle non arrays" do
+      expect{
+        record.index4='mac'
+      }.to change{record.index4}.from([]).to(['mac'])
+    end
+
+    it "should handle nil" do
+      expect{
+        record.index3 = nil
+      }.to change{record.index3}.from(['apple']).to([])
+    end
   end
 
   describe "namespacing buckets" do
