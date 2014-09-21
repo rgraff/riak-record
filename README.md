@@ -14,7 +14,9 @@ RiakRecord::Base.namespace = 'staging' # optional. Namespaces buckets
 class ExampleRecord < RiakRecord::Base
   bucket_name :example_a
   data_attributes :attribute1, :attribute2
-  index_int_attributes :index1, :index2
+  belongs_to :example_b
+
+  index_int_attributes :index1, :index2, :example_b_id
   index_bin_attributes :index3
 end
 
@@ -28,7 +30,7 @@ record.attribute1 #> record.riak_object.data[:attribute1]
 record.attribute1 = 'name'
 record.index1 = 1 #> record.riak_object.indexes["index1_int"] = [1]
 record.save  #> record.riak_object.store
-
+record.reload #> reload the underlying riak_object from the db discarding changes
 ```
 
 
