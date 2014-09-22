@@ -3,7 +3,7 @@ require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 
 class Artist < RiakRecord::Base
   bucket_name 'artist'
-  data_attributes :name
+  data_attributes :name, :bin_number
   index_int_attributes :sales
   index_bin_attributes :category
 end
@@ -14,6 +14,8 @@ describe RiakRecord::Finder do
       a = Artist.new(c.to_s)
       a.name = "Pop Artist #{c}"
       a.category = "pop"
+      a.bin_number = c % 10
+      a.sales = (c % 10) * 100
       a.save
     end
 
@@ -21,6 +23,8 @@ describe RiakRecord::Finder do
       a = Artist.new(c.to_s)
       a.name = "Rock Artist #{c}"
       a.category = "rock"
+      a.bin_number = c % 10
+      a.sales = (c % 10) * 100
       a.save
     end
   end
@@ -42,7 +46,7 @@ describe RiakRecord::Finder do
 
   describe "count" do
     it "should return the count by map reduce" do
-      expect(pop_finder).to receive(:count_by_map_reduce).and_call_original
+      expect(pop_finder).to receive(:count_map_reduce).and_call_original
       expect(pop_finder.count).to eq(155)
     end
 
@@ -52,7 +56,7 @@ describe RiakRecord::Finder do
       end
 
       it "should not count by map reduce if load complete" do
-        expect(pop_finder).to_not receive(:count_by_map_reduce)
+        expect(pop_finder).to_not receive(:count_map_reduce)
         expect(pop_finder.count).to eq(155)
       end
     end
@@ -118,6 +122,42 @@ describe RiakRecord::Finder do
     it "should return the first object to match block" do
       expect(pop_finder.detect{|o| o.id =~ /^3/}.id).to match(/^3/)
     end
+  end
+
+  describe "count_by(attribute)" do
+    let(:bin_number_counts){
+      { "0" => 15, "1" => 16, "2" => 16, "3" => 16, "4" => 16, "5" => 16, "6" => 15, "7" => 15, "8" => 15, "9" => 15}
+    }
+
+    let(:sales_counts){
+      { "0" => 15, "100" => 16, "200" => 16, "300" => 16, "400" => 16, "500" => 16, "600" => 15, "700" => 15, "800" => 15, "900" => 15}
+    }
+
+    it "should count_by" do
+      expect(pop_finder).to receive(:count_by_map_reduce).with(:bin_number).and_call_original
+      expect(pop_finder.count_by(:bin_number)).to eq(bin_number_counts)
+    end
+
+    context "everything loaded" do
+      before :each do
+        pop_finder.all
+      end
+
+      it "should count_by without map reduce" do
+        expect(pop_finder).to_not receive(:count_by_map_reduce).with(:bin_number)
+        expect(pop_finder.count_by(:bin_number)).to eq(bin_number_counts)
+      end
+
+    end
+
+    context "attribute is index" do
+      it "should count_by" do
+        expect(pop_finder).to receive(:count_by_map_reduce).with(:sales).and_call_original
+        expect(pop_finder.count_by(:sales)).to eq(sales_counts)
+      end
+
+    end
+
   end
 
 end

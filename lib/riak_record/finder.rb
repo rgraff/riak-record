@@ -24,13 +24,14 @@ module RiakRecord
       end
       @loaded_objects
     end
+    alias :to_a :all
 
     def each
       @loaded_objects.each{|o| yield o}
     end
 
     def count
-      @load_complete ? @loaded_objects.count : count_by_map_reduce
+      @load_complete ? @loaded_objects.count : count_map_reduce
     end
 
     def first(n=nil)
@@ -78,13 +79,29 @@ module RiakRecord
       end
     end
 
+    def count_by(attribute)
+      return count_by_map_reduce(attribute) unless @load_complete
+      results = {}
+      @loaded_objects.each{|o| k = o.send(attribute).to_s; results[k] ||= 0; results[k] += 1 }
+      results
+    end
+
   private
 
     def load_started?
       @load_complete || @loaded_objects.count > 0
     end
 
-    def count_by_map_reduce
+    def count_by_map_reduce(attribute)
+      count_by_index = @finder_class.index_names[attribute.to_sym].present?
+      parsed_attribute = count_by_index ? "v.values[0].metadata.index.#{@finder_class.index_names[attribute.to_sym]}" : "JSON.parse(v.values[0].data).#{attribute}"
+      Riak::MapReduce.new(@finder_class.client).
+        index(@bucket, @index, @value).
+        map("function(v){ var h = {}; h[#{parsed_attribute}] = 1; return [h] }", :keep => false).
+        reduce("function(values) { var result = {}; for (var value in values) { for (var key in values[value]) { if (key in result) { result[key] += values[value][key]; } else { result[key] = values[value][key]; }}} return [result]; }", :keep => true).run.first
+    end
+
+    def count_map_reduce
       Riak::MapReduce.new(@finder_class.client).
         index(@bucket, @index, @value).
         map("function(v){ return [1] }", :keep => false).
