@@ -58,6 +58,8 @@ module RiakRecord
 
     def self.index_int_attributes(*attributes)
       attributes.map(&:to_sym).each do |method_name|
+        index_names[method_name.to_sym] = "#{method_name}_int"
+
         define_method(method_name) do
           indexes["#{method_name}_int"]
         end
@@ -70,6 +72,8 @@ module RiakRecord
 
     def self.index_bin_attributes(*attributes)
       attributes.map(&:to_sym).each do |method_name|
+        index_names[method_name.to_sym] = "#{method_name}_bin"
+
         define_method(method_name) do
           indexes["#{method_name}_bin"]
         end
@@ -78,6 +82,10 @@ module RiakRecord
           indexes["#{method_name}_bin"] = Array(value).map(&:to_s)
         end
       end
+    end
+
+    def self.index_names
+      @index_names ||= {}
     end
 
     def self.belongs_to(attribute, options = {})

@@ -1,4 +1,3 @@
-require 'pry'
 require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 
 class ExampleA < RiakRecord::Base
@@ -24,6 +23,13 @@ describe RiakRecord::Base do
   it "should share a client among all classes" do
     expect(ExampleA.client).to_not eq(nil)
     expect(ExampleA.client).to eq(ExampleB.client)
+  end
+
+  describe "index_names" do
+    it "should look up the index by symbol" do
+      expect( ExampleA.index_names[:index1] ).to eq("index1_int")
+      expect( ExampleA.index_names[:index3] ).to eq("index3_bin")
+    end
   end
 
   describe "reload" do
