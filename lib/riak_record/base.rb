@@ -3,6 +3,11 @@ require 'riak'
 module RiakRecord
   class Base
     attr_reader :riak_object
+    include Associations
+    class << self
+      alias :has_many :has_many_riak
+      alias :belongs_to :belongs_to_riak
+    end
 
     def initialize(r = nil)
       unless r.is_a? Riak::RObject
@@ -86,26 +91,6 @@ module RiakRecord
 
     def self.index_names
       @index_names ||= {}
-    end
-
-    def self.belongs_to(attribute, options = {})
-      class_name = options[:class_name] ||= attribute.to_s.to_s.split("_").collect(&:capitalize).join
-      key = options[:key] || "#{attribute}_id"
-      method_def = <<-END_OF_RUBY
-
-      def #{attribute}
-        @belongs_to_#{attribute} = nil if @belongs_to_#{attribute} && @belongs_to_#{attribute}.id == #{key}
-        @belongs_to_#{attribute} ||= #{class_name}.find(#{key})
-      end
-
-      def #{attribute}=(obj)
-        raise ArgumentError unless obj.kind_of?(RiakRecord::Base)
-        @belongs_to_#{attribute} = obj
-        self.#{key} = obj.id
-      end
-      END_OF_RUBY
-
-      class_eval method_def
     end
 
     def self.where(options)

@@ -197,7 +197,6 @@ describe RiakRecord::Base do
       it "should find the relation" do
         record.example_a = related_record
         record.save
-
         expect(record.reload.example_a).to eq(related_record)
       end
     end

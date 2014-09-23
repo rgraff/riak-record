@@ -69,7 +69,21 @@ finder.each{|e| ... } #> supports all enumerable methods
 finder.count_by(:author_id) #> {"1" => 1}
 ```
 
+## Using RiakRecord::Associations in other classes
 
+If you're using another data store with Riak, it might be helpful to include Riak's associations in the other class.
+
+```ruby
+class User < ActiveRecord::Base
+  include RiakRecord::Assocations
+
+  has_many_riak :posts, :class_name => "Post", :foreign_key => :user_id
+  belongs_to_riak :author, :class_name => "Author", :foreign_key => :author_id
+end
+
+User.find(1).posts #> create RiakRecord::Finder(Post, :user_id => 1)
+User.find(1).author #> Author.find(self.author_id)
+```
 
 ## Contributing to riak-record
 
