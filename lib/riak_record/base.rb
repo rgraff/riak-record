@@ -108,6 +108,9 @@ module RiakRecord
       class_eval method_def
     end
 
+    def self.where(options)
+      RiakRecord::Finder.new(self, options)
+    end
 
     def self.find(key_or_keys)
       return find_many(key_or_keys) if key_or_keys.is_a?(Array)

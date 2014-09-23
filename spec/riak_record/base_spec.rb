@@ -107,6 +107,12 @@ describe RiakRecord::Base do
       end
     end
 
+    describe "where" do
+      it "should return an instance of RiakRecord::Finder" do
+        expect( ExampleA.where(:index1 => 'hello') ).to be_an_instance_of(RiakRecord::Finder)
+      end
+    end
+
     describe "data_attributes" do
       let(:riak_object) { Riak::RObject.new("obj").tap{|r| r.data = data } }
       let(:data) { {'attribute1' => "1"} }
