@@ -1,7 +1,9 @@
 # riak-record
 
 RiakRecord is a thin and immature wrapper around riak-ruby-client. It creates a bucket for
-each class, provides a simple finder, and creates attribute reader.
+each class, provides a simple finder, and creates attribute reader.  It adds a layer over
+the Riak::Client to make interacting with Riak more ActiveRecord-like while
+still giving you all the access to Riak's underlying client's capabilities.
 
 ## Usage
 
@@ -11,26 +13,60 @@ require 'riak-record'
 RiakRecord::Base.client = Riak::Client.new
 RiakRecord::Base.namespace = 'staging' # optional. Namespaces buckets
 
-class ExampleRecord < RiakRecord::Base
-  bucket_name :example_a
-  data_attributes :attribute1, :attribute2
-  belongs_to :example_b
+class Post < RiakRecord::Base
+  bucket_name :posts
+  data_attributes :title, :body, :category
+  belongs_to :author
+  has_many :comments
 
-  index_int_attributes :index1, :index2, :example_b_id
-  index_bin_attributes :index3
+  index_int_attributes :author_id # author_id_int
+  index_bin_attributes :category # catgory_bin
 end
 
-ExampleRecord.find("a-key") #> Instance of ExampleRecord
-ExampleRecord.find(["a-key","b-key"]) #> Array of ExampleRecords returned
+class Author < RiakRecord::Base
+  bucket_name :authors
+  data_attributes :name
+  has_many :posts
+end
 
-record = ExampleRecord.find("a-key")
-record.riak_object #> directly access Riak::RObject
-record.data #> same as record.riak_object.data
-record.attribute1 #> record.riak_object.data[:attribute1]
-record.attribute1 = 'name'
-record.index1 = 1 #> record.riak_object.indexes["index1_int"] = [1]
-record.save  #> record.riak_object.store
-record.reload #> reload the underlying riak_object from the db discarding changes
+class Comment < RiakRecord::Base
+  bucket_name :comments
+  data_attribute :comment
+  belongs_to :post
+
+  index_int_attributes :post_id
+end
+
+Author.client #> instance of Riak::Client
+Author.bucket #> instance of Riak::Bucket
+
+author = Author.new(99) # create a new record with id/key 99
+author.name = 'Robert' # set an attribute
+author.save # store in riak
+
+Post.find(["my-first-post","a-farewell-to-blogging"]) #> Array of ExampleRecords returned
+
+post = Post.find("my-first-post") #> Instance of ExampleRecord
+post.riak_object #> directly access Riak::RObject
+post.data #> same as record.riak_object.data
+
+post.title = 'My First Post' #> record.riak_object.data['title']=
+post.title #> record.riak_object.data['title']
+
+post.author = 99 #> record.riak_object.indexes["author_id_int"] = [99]
+post.category = 'ruby' #> record.riak_object.indexes["category_bin"] = ["ruby"]
+post.save  #> record.riak_object.store
+post.reload #> reload the underlying riak_object from the db discarding changes
+
+Author.find(99).posts #> [post]
+
+finder = Post.where(:category => 'ruby') #> Instance of RiakRecord::Finder
+finder.count #> 1
+finder.any? #> true
+finder.any?{|o| o.category == 'php'} #> false
+finder.none? #> false
+finder.each{|e| ... } #> supports all enumerable methods
+finder.count_by(:author_id) #> {"1" => 1}
 ```
 
 
