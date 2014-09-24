@@ -3,6 +3,7 @@ require 'riak'
 module RiakRecord
   class Base
     attr_reader :riak_object
+    include Callbacks
     include Associations
     class << self
       alias :has_many :has_many_riak
@@ -26,8 +27,20 @@ module RiakRecord
     end
 
     def save
+      creating = new_record?
+
+      before_save!
+      creating ? before_create! : before_update!
       riak_object.store(:returnbody => false)
+      creating ? after_create! : after_update!
+      after_save!
+
+      @_stored = true
       self
+    end
+
+    def new_record?
+      !(@_stored || riak_object.vclock)
     end
 
     def id
@@ -126,7 +139,7 @@ module RiakRecord
     end
 
     def self.namespace_prefixed
-      self.namespace + ":-:"
+      self.namespace + ":"
     end
 
     def self.all_buckets_in_namespace

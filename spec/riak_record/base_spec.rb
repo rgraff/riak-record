@@ -16,8 +16,8 @@ end
 
 describe RiakRecord::Base do
   it "should set the bucket name on each instance of RiakRecord class" do
-    expect(ExampleA.bucket_name).to eq(RiakRecord::Base.namespace+":-:example_a")
-    expect(ExampleB.bucket_name).to eq(RiakRecord::Base.namespace+':-:example_b')
+    expect(ExampleA.bucket_name).to eq(RiakRecord::Base.namespace+":example_a")
+    expect(ExampleB.bucket_name).to eq(RiakRecord::Base.namespace+':example_b')
   end
 
   it "should share a client among all classes" do
@@ -45,12 +45,89 @@ describe RiakRecord::Base do
     end
   end
 
+  describe "new_record?" do
+    let(:record){ ExampleA.new("1") }
+    it "should be true for a new record" do
+      expect(record).to be_new_record
+    end
+
+    it "should be false for loaded new records" do
+      expect(record.save.reload).to_not be_new_record
+    end
+
+    it "should be a new_record if unstored" do
+      expect{
+        record.save
+      }.to change{ record.new_record? }.from(true).to(false)
+    end
+  end
+
   describe "save" do
-    let(:record) { ExampleA.new("1234") }
+    after :each do
+      example_class.instance_variable_set("@_callbacks", nil)
+    end
+    let(:example_class){ ExampleA }
+    let(:record) { example_class.new("1234") }
+
     it "should store the object" do
       record.attribute1 = 'hello'
       record.save
       expect(record.reload.attribute1).to eq('hello')
+    end
+
+    it "should call before_save callbacks" do
+      example_class.before_save(:a_callback)
+      expect(record).to receive(:a_callback)
+      record.save
+    end
+
+    it "should call after_save callbacks" do
+      example_class.after_save(:a_callback)
+      expect(record).to receive(:a_callback)
+      record.save
+    end
+
+    context "new records" do
+      before :each do
+        allow(record).to receive(:new_record?).and_return(true)
+      end
+      it "should call the before_create callbacks" do
+        example_class.before_create(:a_create_callback)
+        example_class.before_update(:an_update_callback)
+        expect(record).to receive(:a_create_callback).and_return(true)
+        expect(record).to_not receive(:an_update_callback)
+        record.save
+      end
+
+      it "should call the after_create callbacks" do
+        example_class.after_create(:a_create_callback)
+        example_class.after_update(:an_update_callback)
+        expect(record).to receive(:a_create_callback).and_return(true)
+        expect(record).to_not receive(:an_update_callback)
+        record.save
+      end
+    end
+
+    context "existing records" do
+      before :each do
+        allow(record).to receive(:new_record?).and_return(false)
+      end
+
+      it "should call the before_update callbacks" do
+        example_class.before_create(:a_create_callback)
+        example_class.before_update(:an_update_callback)
+        expect(record).to_not receive(:a_create_callback)
+        expect(record).to receive(:an_update_callback).and_return(true)
+        record.save
+      end
+
+      it "should call the after_update callbacks" do
+        example_class.after_create(:a_create_callback)
+        example_class.after_update(:an_update_callback)
+        expect(record).to_not receive(:a_create_callback)
+        expect(record).to receive(:an_update_callback).and_return(true)
+        record.save
+      end
     end
   end
 
@@ -181,7 +258,7 @@ describe RiakRecord::Base do
     describe "namespacing buckets" do
       it "should prepend namespace to bucket name" do
         RiakRecord::Base.namespace = "namespace_test"
-        expect(ExampleA.bucket_name).to eq("namespace_test:-:example_a")
+        expect(ExampleA.bucket_name).to eq("namespace_test:example_a")
       end
     end
 

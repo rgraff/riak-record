@@ -15,51 +15,44 @@ RiakRecord::Base.namespace = 'staging' # optional. Namespaces buckets
 
 class Post < RiakRecord::Base
   bucket_name :posts
-  data_attributes :title, :body, :category
-  belongs_to :author
-  has_many :comments
+  data_attributes :title, :body
 
   index_int_attributes :author_id # author_id_int
   index_bin_attributes :category # catgory_bin
 end
 
-class Author < RiakRecord::Base
-  bucket_name :authors
-  data_attributes :name
-  has_many :posts
-end
+Post.client #> instance of Riak::Client
+Post.bucket #> instance of Riak::Bucket named "staging:posts"
 
-class Comment < RiakRecord::Base
-  bucket_name :comments
-  data_attribute :comment
-  belongs_to :post
-
-  index_int_attributes :post_id
-end
-
-Author.client #> instance of Riak::Client
-Author.bucket #> instance of Riak::Bucket
-
-author = Author.new(99) # create a new record with id/key 99
-author.name = 'Robert' # set an attribute
-author.save # store in riak
-
-Post.find(["my-first-post","a-farewell-to-blogging"]) #> Array of ExampleRecords returned
-
-post = Post.find("my-first-post") #> Instance of ExampleRecord
+Post.find(["my-first-post","a-farewell-to-blogging"]) #> Array of Posts returned
+post = Post.find("my-first-post") #> Instance of Post
 post.riak_object #> directly access Riak::RObject
 post.data #> same as record.riak_object.data
 
 post.title = 'My First Post' #> record.riak_object.data['title']=
 post.title #> record.riak_object.data['title']
 
-post.author = 99 #> record.riak_object.indexes["author_id_int"] = [99]
+post.author_id = 99 #> record.riak_object.indexes["author_id_int"] = [99]
 post.category = 'ruby' #> record.riak_object.indexes["category_bin"] = ["ruby"]
 post.save  #> record.riak_object.store
+post.new_record? #> false
 post.reload #> reload the underlying riak_object from the db discarding changes
 
-Author.find(99).posts #> [post]
+```
 
+Callbacks are called in this order:
+* before_save
+* before_create or before_update
+* ...save...
+* after_save
+* after_create or after_update
+
+
+### RiakRecord::Finder
+
+RiakRecord::Finder provides find objects by indexes. Results are loaded in batches as needed.
+
+```ruby
 finder = Post.where(:category => 'ruby') #> Instance of RiakRecord::Finder
 finder.count #> 1
 finder.any? #> true
@@ -67,6 +60,54 @@ finder.any?{|o| o.category == 'php'} #> false
 finder.none? #> false
 finder.each{|e| ... } #> supports all enumerable methods
 finder.count_by(:author_id) #> {"1" => 1}
+```
+
+### RiakRecord::Associations
+
+RiakRecord supports `has_many` and `belongs_to` associations which are light versions of what you'd expect with ActiveRecord.
+
+```ruby
+class Author < RiakRecord::Base
+  bucket_name :authors
+  data_attributes :name
+  has_many :posts, :class_name => 'Post', :foreign_key => "post_id"
+end
+
+class Comment < RiakRecord::Base
+  bucket_name :comments
+  data_attribute :comment
+  belongs_to :post, :class_name => 'Post', :foreign_key => "post_id"
+
+  index_int_attributes :post_id
+end
+
+Author.find(99).posts #> RiakRecord::Finder [post]
+Comment.find(12).author #> an instance of Author
+```
+
+### RiakRecord::Callbacks
+
+RiakRecord supports before and after callbacks for save, create and update. You can prepend or append callbacks. And they can be strings (eval'd), Procs, Objects or Symbols.
+
+```ruby
+class Blog < RiakRecord::Base
+  bucket :blogs
+  data_attribute :subdomain
+
+  class BlogCallbacks
+    def before_update
+    end
+  end
+
+  before_save Proc.new{|record| record.create_subdomain }
+  after_create :send_welcome_email
+  prepend_after_create "logger('new blog')"
+  after_update :send_change_confirmation
+  before_update BlogCallbacks.new
+
+  ...
+end
+
 ```
 
 ## Using RiakRecord::Associations in other classes

@@ -1,18 +1,18 @@
 require 'simplecov'
 
 module SimpleCov::Configuration
-  def clean_filters
+  def cleans
     @filters = []
   end
 end
 
 SimpleCov.configure do
-  clean_filters
+  cleans
   load_profile 'test_frameworks'
 end
 
 ENV["COVERAGE"] && SimpleCov.start do
-  add_filter "/.rvm/"
+  add "/.rvm/"
 end
 $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
 $LOAD_PATH.unshift(File.dirname(__FILE__))
@@ -30,7 +30,7 @@ Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].each {|f| require f}
 RSpec.configure do |config|
   config.before do
     RiakRecord::Base.namespace = 'test'
-    RiakRecord::Base.all_buckets_in_namespace do |bucket|
+    RiakRecord::Base.all_buckets_in_namespace.each do |bucket|
       bucket.keys.each{|k| bucket.delete(k) }
     end
   end
