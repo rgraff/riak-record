@@ -1,14 +1,18 @@
-# riak-record
+# RiakRecord
 
 RiakRecord is a thin and immature wrapper around riak-ruby-client. It creates a bucket for
-each class, provides a simple finder, and creates attribute reader.  It adds a layer over
+each class, provides a simple finder, and creates attribute accessors for data and indexes.  It adds a layer over
 the Riak::Client to make interacting with Riak more ActiveRecord-like while
 still giving you all the access to Riak's underlying client's capabilities.
+
+RiakRecord is is very similar to [Basho's Ripple](https://github.com/basho-labs/ripple) which is more feature rich
+but also abandoned. For the [same reasons](http://basho.com/tag/ripple-client-apis/)
+that Basho abandoned Ripple, you should think twice before using RiakRecord.
 
 ## Usage
 
 ```ruby
-require 'riak-record'
+require 'riak_record'
 
 RiakRecord::Base.client = Riak::Client.new
 RiakRecord::Base.namespace = 'staging' # optional. Namespaces buckets
