@@ -14,6 +14,7 @@ module RiakRecord
       unless r.is_a? Riak::RObject
         r = self.class.bucket.new(r.to_s)
         r.data = {}
+        r.content_type = 'application/json'
       end
       @riak_object = r
     end
@@ -79,7 +80,7 @@ module RiakRecord
         index_names[method_name.to_sym] = "#{method_name}_int"
 
         define_method(method_name) do
-          indexes["#{method_name}_int"]
+          indexes["#{method_name}_int"].to_a
         end
 
         define_method("#{method_name}=".to_sym) do |value|
@@ -93,7 +94,7 @@ module RiakRecord
         index_names[method_name.to_sym] = "#{method_name}_bin"
 
         define_method(method_name) do
-          indexes["#{method_name}_bin"]
+          indexes["#{method_name}_bin"].to_a
         end
 
         define_method("#{method_name}=".to_sym) do |value|

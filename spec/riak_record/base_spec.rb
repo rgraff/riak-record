@@ -212,11 +212,21 @@ describe RiakRecord::Base do
     end
 
     describe "index_int_attributes" do
-      let(:riak_object) { Riak::RObject.new("obj").tap{|r| r.indexes["index1_int"] = [1] } }
-      let(:record) { ExampleA.new(riak_object) }
+      let(:record) { ExampleA.new("ob") }
+      before :each do
+        record.riak_object.indexes["index1_int"] = [1]
+        record.save
+      end
       it "should read and write each index" do
         expect{
           record.index1=[2]
+        }.to change{record.riak_object.indexes["index1_int"]}.from([1]).to([2])
+      end
+
+      it "should return arrays on reload" do
+        expect{
+          record.index1=2
+          record.save.reload
         }.to change{record.riak_object.indexes["index1_int"]}.from([1]).to([2])
       end
 
