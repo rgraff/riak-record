@@ -27,7 +27,7 @@ module RiakRecord
     alias :to_a :all
 
     def each
-      @loaded_objects.each{|o| yield o}
+      all.each{|o| yield o}
     end
 
     def count

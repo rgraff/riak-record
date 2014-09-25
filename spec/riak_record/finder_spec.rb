@@ -64,7 +64,10 @@ describe RiakRecord::Finder do
 
   describe "enumberable methods" do
     it "should yield once per block" do
-      expect( pop_finder.all?{|o| o.category == 'rock'} ).to eq(true)
+      expect( pop_finder.all?{|o| o.category == ['pop']} ).to eq(true)
+    end
+    it "should yield once per block" do
+      expect( pop_finder.map{|x| 1}.inject{|sum,x| sum = sum.to_i + x}).to eq(155)
     end
   end
 
