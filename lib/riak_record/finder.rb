@@ -24,7 +24,11 @@ module RiakRecord
       end
       @loaded_objects
     end
-    alias :to_a :all
+    alias :to_ary :all # internal array
+
+    def to_a
+      all.dup # new array
+    end
 
     def each
       all.each{|o| yield o}
