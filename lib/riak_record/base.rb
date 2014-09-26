@@ -10,13 +10,21 @@ module RiakRecord
       alias :belongs_to :belongs_to_riak
     end
 
-    def initialize(r = nil)
-      unless r.is_a? Riak::RObject
-        r = self.class.bucket.new(r.to_s)
-        r.data = {}
-        r.content_type = 'application/json'
+    def initialize(options = nil)
+      if options.is_a?(Riak::RObject)
+        @riak_object = options
+      else
+        @riak_object = self.class.bucket.new
+        @riak_object.content_type = 'application/json'
+        @riak_object.data = {}
+        if options.is_a?(Hash)
+          id = options.delete(:id) || options.delete(:key)
+          @riak_object.key = id.to_s if id
+          options.each_pair{ |k,v| self.send("#{k}=".to_sym, v) }
+        elsif !options.nil?
+          @riak_object.key = options.to_s
+        end
       end
-      @riak_object = r
     end
 
     def data
@@ -39,6 +47,19 @@ module RiakRecord
       @_stored = true
       self
     end
+    alias :save! :save
+
+    def self.create(*args)
+      self.new(*args).save
+    end
+
+    def self.create!(*args)
+      self.new(*args).save
+    end
+
+    def delete
+      riak_object.delete
+    end
 
     def new_record?
       !(@_stored || riak_object.vclock)
@@ -46,6 +67,11 @@ module RiakRecord
 
     def id
       riak_object.key
+    end
+
+    def ==(record)
+      return false unless record.kind_of?(RiakRecord::Base)
+      self.class.bucket_name == record.class.bucket_name && id == record.id
     end
 
     def reload

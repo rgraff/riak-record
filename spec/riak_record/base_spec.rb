@@ -25,6 +25,28 @@ describe RiakRecord::Base do
     expect(ExampleA.client).to eq(ExampleB.client)
   end
 
+  describe "new" do
+    it "should accept a string" do
+      record = ExampleA.new("abc")
+      expect(record.id).to eq("abc")
+    end
+    it "should accept a int" do
+      record = ExampleA.new(123)
+      expect(record.id).to eq("123")
+    end
+    it "should accept an robject" do
+      robject = ExampleA.bucket.new("abc")
+      record = ExampleA.new(robject)
+      expect(record.id).to eq("abc")
+    end
+    it "should accept a hash" do
+      record = ExampleA.new(:id => "abc", :attribute1 => 'sappy', :index1 => 123)
+      expect(record.id).to eq("abc")
+      expect(record.attribute1).to eq('sappy')
+      expect(record.index1).to eq([123])
+    end
+  end
+
   describe "index_names" do
     it "should look up the index by symbol" do
       expect( ExampleA.index_names[:index1] ).to eq("index1_int")
@@ -127,6 +149,15 @@ describe RiakRecord::Base do
         expect(record).to_not receive(:a_create_callback)
         expect(record).to receive(:an_update_callback).and_return(true)
         record.save
+      end
+    end
+
+    describe "delete" do
+      let(:saved_record){ ExampleA.create("abc") }
+      it "should remove from riak" do
+        expect{
+          saved_record.delete
+        }.to change{ ExampleA.find("abc") }.from(saved_record).to(nil)
       end
     end
   end
