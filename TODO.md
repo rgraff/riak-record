@@ -2,8 +2,6 @@
 
 * RiakRecord::Base
   * links_to should create a walkable link
-  * delete
-  * new(hash)
   * id_generator
 * Document methods in classes
 * Validations support
