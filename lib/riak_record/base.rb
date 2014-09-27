@@ -69,6 +69,10 @@ module RiakRecord
       riak_object.key
     end
 
+    def to_param
+      id
+    end
+
     def ==(record)
       return false unless record.kind_of?(RiakRecord::Base)
       self.class.bucket_name == record.class.bucket_name && id == record.id
