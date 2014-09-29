@@ -29,7 +29,9 @@ class Comment < RiakRecord::Base
   bucket_name "comments"
   data_attributes :comment
 
-  index_int_attributes :post_id
+  belongs_to :linked_author, :class_name => 'Author', :foreign_key => :author_id, :link => true
+
+  index_int_attributes :post_id, :author_id
 end
 
 describe RiakRecord::Associations do
@@ -62,6 +64,40 @@ describe RiakRecord::Associations do
       }.to change{ post.author_id }.from(@author.id).to(@real_author.id)
     end
 
+  end
+
+  describe "linked belongs_to" do
+    let(:comment){ Comment.new("1") }
+    let(:author){ Author.new("2") }
+
+    it "should add links" do
+      expect{
+        comment.update_attributes(:author_id => 'a2')
+      }.to change{ comment.links.count }.from(0).to(1)
+    end
+
+    it "should link to the related object" do
+      comment.update_attributes(:author_id => 2)
+
+      link = comment.links.first
+      expect(link.tag).to eq("linked_author")
+      expect(link.key).to eq("2")
+      expect(link.bucket).to eq(Author.bucket_name)
+    end
+
+    it "should update when changed" do
+      comment.update_attributes(:author_id => 2)
+      expect{
+        comment.update_attributes(:author_id => 3)
+      }.to change{comment.links.first.key}.from("2").to("3")
+    end
+
+    it "should delete with nil'd" do
+      comment.update_attributes(:author_id => 2)
+      expect{
+        comment.update_attributes(:author_id => nil)
+      }.to change{comment.links.count}.from(1).to(0)
+    end
   end
 
   describe "has_many_riak" do

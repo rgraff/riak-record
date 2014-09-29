@@ -35,12 +35,19 @@ module RiakRecord
       riak_object.indexes
     end
 
+    def links
+      riak_object.links
+    end
+
     def save
       creating = new_record?
 
       before_save!
       creating ? before_create! : before_update!
+
+      update_links
       riak_object.store(:returnbody => false)
+
       creating ? after_create! : after_update!
       after_save!
 

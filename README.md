@@ -48,6 +48,7 @@ post.reload #> reload the underlying riak_object from the db discarding changes
 Callbacks are called in this order:
 * before_save
 * before_create or before_update
+* ...update_links...
 * ...save...
 * after_create or after_update
 * after_save
@@ -81,7 +82,7 @@ end
 class Comment < RiakRecord::Base
   bucket_name :comments
   data_attribute :comment
-  belongs_to :post, :class_name => 'Post', :foreign_key => "post_id"
+  belongs_to :post, :class_name => 'Post', :foreign_key => "post_id" # optional :link => true to create walkable link on save
 
   index_int_attributes :post_id
 end

@@ -1,10 +1,38 @@
 module RiakRecord
   module Associations
 
+    def update_links
+      link_definitions.each_pair do |tag, definition|
+        tag = tag.to_s
+        bucket_name = Object.const_get(definition[:class_name].to_s).bucket_name.to_s
+        key = self.send(definition[:foreign_key].to_sym).first
+
+        # remove links with tag name
+        self.links.delete_if{|l| l.tag.to_s == tag }
+
+        # add link if key is set
+        self.links << Riak::Link.new(bucket_name.to_s, key.to_s, tag.to_s) unless key.nil?
+      end
+    end
+
+    def link_definitions
+      self.class.link_definitions
+    end
+
     module ClassMethods
+      def link_definitions
+        @link_definitions ||= {}
+      end
+
       def belongs_to_riak(association_name, options = {})
         class_name = options[:class_name] ||= association_name.to_s.split("_").collect(&:capitalize).join
         foreign_key = options[:foreign_key] || "#{association_name}_id"
+
+        if options[:link]
+          raise ArgumentError, "link option only available for instances of RiakRecord" unless self < RiakRecord::Base
+          link_definitions[association_name.to_sym] = {:class_name => class_name, :foreign_key => foreign_key}
+        end
+
         method_def = <<-END_OF_RUBY
 
         def #{association_name}
