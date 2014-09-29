@@ -35,7 +35,7 @@ post.data #> same as record.riak_object.data
 
 post.title = 'My First Post' #> record.riak_object.data['title']=
 post.title #> record.riak_object.data['title']
-post.update_attributes(:title => 'My First Post (revised)') 
+post.update_attributes(:title => 'My First Post (revised)')
 
 post.author_id = 99 #> record.riak_object.indexes["author_id_int"] = [99]
 post.category = 'ruby' #> record.riak_object.indexes["category_bin"] = ["ruby"]
@@ -49,8 +49,8 @@ Callbacks are called in this order:
 * before_save
 * before_create or before_update
 * ...save...
-* after_save
 * after_create or after_update
+* after_save
 
 
 ### RiakRecord::Finder
