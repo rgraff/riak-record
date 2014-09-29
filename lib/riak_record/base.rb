@@ -84,6 +84,14 @@ module RiakRecord
       self
     end
 
+    def update_attributes(attributes)
+      attributes.each_pair do |k,v|
+        setter = "#{k}=".to_sym
+        self.send(setter, v) if respond_to?(setter)
+      end
+      save
+    end
+
     def self.bucket_name(name = :not_a_name)
       @bucket_name = name.to_s unless name == :not_a_name
       namespace.present? ? namespace_prefixed+@bucket_name : @bucket_name

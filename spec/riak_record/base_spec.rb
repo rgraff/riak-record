@@ -67,6 +67,19 @@ describe RiakRecord::Base do
     end
   end
 
+  describe "update_attributes" do
+    let(:record){ ExampleA.new("1234") }
+    it "should set the values" do
+      expect{
+        record.update_attributes(:attribute1 => 'here')
+      }.to change{ record.attribute1 }.to('here')
+    end
+    it "should call save" do
+      expect(record).to receive(:save)
+      record.update_attributes({})
+    end
+  end
+
   describe "new_record?" do
     let(:record){ ExampleA.new("1") }
     it "should be true for a new record" do
