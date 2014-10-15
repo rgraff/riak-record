@@ -120,6 +120,14 @@ module RiakRecord
       finder.count
     end
 
+    def self.first(n = 1)
+      finder.first(n)
+    end
+
+    def self.page(page_number = 1, page_size = 100)
+      finder.page(page_number, page_size)
+    end
+
     def self.data_attributes(*attributes)
       attributes.map(&:to_sym).each do |method_name|
         define_method(method_name) do

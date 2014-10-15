@@ -29,6 +29,7 @@ Post.client #> instance of Riak::Client
 Post.bucket #> instance of Riak::Bucket named "staging:posts"
 Post.all #> [] uses the special $bucket secondary index
 Post.count #> 0 also uses the special $bucket index
+records, next_page = Post.page(2, 100) #> returns records 101-200 using the $bucket index.
 
 Post.find(["my-first-post","a-farewell-to-blogging"]) #> Array of Posts returned
 post = Post.find("my-first-post") #> Instance of Post
@@ -62,6 +63,7 @@ RiakRecord::Finder provides find objects by indexes. Results are loaded in batch
 
 ```ruby
 finder = Post.where(:category => 'ruby') #> Instance of RiakRecord::Finder
+finder.page(1) # returns the first 100 records. Note it has to stream in previous pages
 finder.count #> 1
 finder.any? #> true
 finder.any?{|o| o.category == 'php'} #> false

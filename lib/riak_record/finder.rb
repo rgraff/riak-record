@@ -90,6 +90,25 @@ module RiakRecord
       results
     end
 
+    def page(page_number = 1, page_size = 100)
+      current_page = 1
+      page_number = page_number.to_i
+      page_number = 1 if page_number < 1
+
+      querier = Riak::SecondaryIndex.new(@bucket, @index, @value, :max_results => page_size)
+      while current_page < page_number
+        if querier.has_next_page?
+          querier = querier.next_page
+          current_page = current_page + 1
+        else
+          return [], false # no results, no next page
+        end
+      end
+
+      results = querier.values.compact.map{ |robject| @finder_class.new(robject) }
+      return results, querier.has_next_page?
+    end
+
   private
 
     def load_started?

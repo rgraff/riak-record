@@ -62,6 +62,27 @@ describe RiakRecord::Finder do
     end
   end
 
+  describe "page" do
+    it "should return a page of results" do
+      results, next_page = pop_finder.page(1,10)
+      expect(results.map(&:id).sort).to eq(pop_finder.first(10).map(&:id).sort)
+      expect(next_page).to eq(true)
+    end
+
+    it "should return an empty result when the page is to big" do
+      results, next_page = pop_finder.page(100,10)
+      expect(results).to be_empty
+      expect(next_page).to eq(false)
+    end
+
+    it "should return results and false on last page" do
+      results, next_page = pop_finder.page(2, 100)
+      expect(results).to_not be_empty
+      expect(next_page).to eq(false)
+    end
+
+  end
+
   describe "enumberable methods" do
     it "should yield once per block" do
       expect( pop_finder.all?{|o| o.category == ['pop']} ).to eq(true)
