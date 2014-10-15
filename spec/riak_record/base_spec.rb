@@ -234,6 +234,30 @@ describe RiakRecord::Base do
       end
     end
 
+    describe "finder" do
+      it "should return a finder for the bucket" do
+        expect( ExampleB.finder ).to be_an_instance_of(RiakRecord::Finder)
+      end
+
+      describe "uses of class finder" do
+        let!(:record1) { ExampleB.new("1").save }
+        let!(:record2) { ExampleB.new("2").save }
+
+        describe "all" do
+          it "should return all the objects in the bucket" do
+            expect(ExampleB.all).to eq [record1, record2]
+          end
+        end
+
+        describe "count" do
+          it "should count all objects in the bucket" do
+            sleep(2) # wait for riak to collect ghosts
+            expect(ExampleB.count).to eq(2)
+          end
+        end
+      end
+    end
+
     describe "data_attributes" do
       let(:riak_object) { Riak::RObject.new("obj").tap{|r| r.data = data } }
       let(:data) { {'attribute1' => "1"} }

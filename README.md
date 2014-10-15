@@ -27,6 +27,8 @@ end
 
 Post.client #> instance of Riak::Client
 Post.bucket #> instance of Riak::Bucket named "staging:posts"
+Post.all #> [] uses the special $bucket secondary index
+Post.count #> 0 also uses the special $bucket index
 
 Post.find(["my-first-post","a-farewell-to-blogging"]) #> Array of Posts returned
 post = Post.find("my-first-post") #> Instance of Post

@@ -120,7 +120,7 @@ module RiakRecord
         @querier = Riak::SecondaryIndex.new(@bucket, @index, @value, :max_results => @page_size)
       end
       @load_complete = !@querier.has_next_page?
-      new_objects = @querier.values.map{ |robject| @finder_class.new(robject) }
+      new_objects = @querier.values.compact.map{ |robject| @finder_class.new(robject) }
       @loaded_objects.concat(new_objects)
       new_objects
     end

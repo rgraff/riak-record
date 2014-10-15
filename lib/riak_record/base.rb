@@ -108,6 +108,18 @@ module RiakRecord
       @bucket ||= client.bucket(bucket_name)
     end
 
+    def self.finder
+      RiakRecord::Finder.new(self, :bucket => bucket_name)
+    end
+
+    def self.all
+      finder.all
+    end
+
+    def self.count
+      finder.count
+    end
+
     def self.data_attributes(*attributes)
       attributes.map(&:to_sym).each do |method_name|
         define_method(method_name) do
@@ -149,7 +161,7 @@ module RiakRecord
     end
 
     def self.index_names
-      @index_names ||= {}
+      @index_names ||= { :bucket => '$bucket' }
     end
 
     def self.where(options)
