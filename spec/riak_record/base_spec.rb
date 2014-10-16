@@ -228,6 +228,15 @@ describe RiakRecord::Base do
       end
     end
 
+    describe "find many" do
+      before :each do
+        ExampleA.new("a").save
+      end
+      it "should return an instance of class for each found" do
+        expect(ExampleA.find_many(["a","b","c"]).map(&:id)).to eq(["a"])
+      end
+    end
+
     describe "where" do
       it "should return an instance of RiakRecord::Finder" do
         expect( ExampleA.where(:index1 => 'hello') ).to be_an_instance_of(RiakRecord::Finder)

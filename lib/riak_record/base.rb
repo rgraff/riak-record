@@ -192,7 +192,8 @@ module RiakRecord
 
     def self.find_many(keys)
       hash = bucket.get_many(keys.map(&:to_s))
-      keys.map{ |k| hash[k] }
+      values = keys.map{ |k| hash[k] }.compact
+      values.map{|robject| new(robject) }
     end
 
     @@namespace = nil
