@@ -64,21 +64,23 @@ describe RiakRecord::Finder do
 
   describe "page" do
     it "should return a page of results" do
-      results, next_page = pop_finder.page(1,10)
+      results, continuation = pop_finder.page(nil,10)
       expect(results.map(&:id).sort).to eq(pop_finder.first(10).map(&:id).sort)
-      expect(next_page).to eq(true)
+      expect(continuation).to be_present
     end
 
-    it "should return an empty result when the page is to big" do
-      results, next_page = pop_finder.page(100,10)
-      expect(results).to be_empty
-      expect(next_page).to eq(false)
+    it "should return the next page with a contination" do
+      results1, continuation1 = pop_finder.page(nil,10)
+      results, continuation = pop_finder.page(continuation1,10)
+
+      expect(results.map(&:id).sort).to eq(pop_finder.to_a.slice(10,10).map(&:id).sort)
+      expect(continuation).to be_present
     end
 
     it "should return results and false on last page" do
-      results, next_page = pop_finder.page(2, 100)
+      results, continuation = pop_finder.page(nil, 500)
       expect(results).to_not be_empty
-      expect(next_page).to eq(false)
+      expect(continuation).to_not be_present
     end
 
   end
@@ -145,6 +147,16 @@ describe RiakRecord::Finder do
   describe "detect" do
     it "should return the first object to match block" do
       expect(pop_finder.detect{|o| o.id =~ /^3/}.id).to match(/^3/)
+    end
+  end
+
+  describe "pluck_by_map_reduce(attribute)" do
+    it "should just return the plucked attributes" do
+      expect(pop_finder.pluck_by_map_reduce(:name).sort).to eq(@pop_artists.map(&:name).sort)
+    end
+
+    it "should pluck indexes too" do
+      expect(pop_finder.pluck_by_map_reduce(:sales).sort).to eq(@pop_artists.map(&:sales).map(&:first).sort)
     end
   end
 

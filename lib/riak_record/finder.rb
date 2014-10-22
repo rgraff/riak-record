@@ -40,12 +40,12 @@ module RiakRecord
 
     def first(n=nil)
       if n
-        until @load_complete || n <= @loaded_objects.count
-          load_next_page
+        unless @load_complete || @loaded_objects.count >= n
+          load_next_page(n-@loaded_objects.count)
         end
         @loaded_objects.first(n)
       else
-        load_next_page unless load_started?
+        load_next_page(1) unless load_started?
         @loaded_objects.first
       end
     end
@@ -65,7 +65,7 @@ module RiakRecord
       if block_given?
         !any?(&block)
       else
-        load_next_page unless load_started?
+        load_next_page(1) unless load_started?
         @loaded_objects.count.zero?
       end
     end
@@ -90,23 +90,20 @@ module RiakRecord
       results
     end
 
-    def page(page_number = 1, page_size = 100)
-      current_page = 1
-      page_number = page_number.to_i
-      page_number = 1 if page_number < 1
-
-      querier = Riak::SecondaryIndex.new(@bucket, @index, @value, :max_results => page_size)
-      while current_page < page_number
-        if querier.has_next_page?
-          querier = querier.next_page
-          current_page = current_page + 1
-        else
-          return [], false # no results, no next page
-        end
-      end
-
+    def page(continuation = nil, page_size = 100)
+      options = { :max_results => page_size }
+      options[:continuation] = continuation if continuation.present?
+      querier = Riak::SecondaryIndex.new(@bucket, @index, @value, options)
       results = querier.values.compact.map{ |robject| @finder_class.new(robject) }
-      return results, querier.has_next_page?
+      return results, querier.keys.continuation
+    end
+
+    def pluck_by_map_reduce(attribute)
+      pluck_by_index = @finder_class.index_names[attribute.to_sym].present?
+      parsed_attribute = pluck_by_index ? "v.values[0].metadata.index.#{@finder_class.index_names[attribute.to_sym]}" : "JSON.parse(v.values[0].data).#{attribute}"
+      Riak::MapReduce.new(@finder_class.client).
+        index(@bucket, @index, @value).
+        map("function(v){ return [#{parsed_attribute}] }", :keep => true).run
     end
 
   private
@@ -131,12 +128,12 @@ module RiakRecord
         reduce("Riak.reduceSum", :keep => true).run.first
     end
 
-    def load_next_page
+    def load_next_page(page_size = @page_size)
       return if @load_complete
       if @querier
         @querier = @querier.next_page
       else
-        @querier = Riak::SecondaryIndex.new(@bucket, @index, @value, :max_results => @page_size)
+        @querier = Riak::SecondaryIndex.new(@bucket, @index, @value, :max_results => page_size)
       end
       @load_complete = !@querier.has_next_page?
       new_objects = @querier.values.compact.map{ |robject| @finder_class.new(robject) }

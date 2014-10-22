@@ -29,7 +29,9 @@ Post.client #> instance of Riak::Client
 Post.bucket #> instance of Riak::Bucket named "staging:posts"
 Post.all #> [] uses the special $bucket secondary index
 Post.count #> 0 also uses the special $bucket index
-records, next_page = Post.page(2, 100) #> returns records 101-200 using the $bucket index.
+
+records, continuation_token = Post.page() #> returns records 1-100 using the $bucket index.
+records2, continuation_token = Post.page(continuation_token) #> returns records 101-200
 
 Post.find(["my-first-post","a-farewell-to-blogging"]) #> Array of Posts returned
 post = Post.find("my-first-post") #> Instance of Post
@@ -63,13 +65,20 @@ RiakRecord::Finder provides find objects by indexes. Results are loaded in batch
 
 ```ruby
 finder = Post.where(:category => 'ruby') #> Instance of RiakRecord::Finder
-finder.page(1) # returns the first 100 records. Note it has to stream in previous pages
 finder.count #> 1
 finder.any? #> true
 finder.any?{|o| o.category == 'php'} #> false
 finder.none? #> false
 finder.each{|e| ... } #> supports all enumerable methods
-finder.count_by(:author_id) #> {"1" => 1}
+finder.count_by(:author_id) #> {"1" => 1}. Works with declared data attributes and indexes
+finder.pluck(:author_id) #> [1,2,3]. Works with declared data attributes and indexes
+```
+
+#### Pagination
+
+```ruby
+records, contination_token = finder.page() # returns the first 100 records.
+records2, contination_token = finder.page(contination_token, 10) # returns records 101-10
 ```
 
 ### RiakRecord::Associations
