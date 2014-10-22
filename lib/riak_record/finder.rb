@@ -98,12 +98,14 @@ module RiakRecord
       return results, querier.keys.continuation
     end
 
-    def pluck_by_map_reduce(attribute)
+    def pluck_by_map_reduce(attribute, timeout = nil)
       pluck_by_index = @finder_class.index_names[attribute.to_sym].present?
       parsed_attribute = pluck_by_index ? "v.values[0].metadata.index.#{@finder_class.index_names[attribute.to_sym]}" : "JSON.parse(v.values[0].data).#{attribute}"
-      Riak::MapReduce.new(@finder_class.client).
+      mr = Riak::MapReduce.new(@finder_class.client).
         index(@bucket, @index, @value).
-        map("function(v){ return [#{parsed_attribute}] }", :keep => true).run
+        map("function(v){ return [#{parsed_attribute}] }", :keep => true)
+      mr.timeout = timeout if timeout.present?
+      mr.run
     end
 
   private
