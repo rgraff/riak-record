@@ -52,6 +52,12 @@ describe RiakRecord::Associations do
       expect(post.author.name).to eq(@author.name)
     end
 
+    it "should not blow up when the relation is nil" do
+      expect{
+        Comment.new.linked_author
+      }.to_not raise_error
+    end
+
     it "should change the results when you change the foreign key value" do
       expect{
         post.author_id = @real_author.id

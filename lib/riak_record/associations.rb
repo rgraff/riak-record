@@ -37,7 +37,9 @@ module RiakRecord
 
         def #{association_name}
           @belongs_to_riak_#{association_name} = nil if @belongs_to_riak_#{association_name} && @belongs_to_riak_#{association_name}.id.to_s != Array(#{foreign_key}).first.to_s
-          @belongs_to_riak_#{association_name} ||= #{class_name}.find(Array(#{foreign_key}).first)
+          related_id = Array(#{foreign_key}).first
+          @belongs_to_riak_#{association_name} ||= #{class_name}.find(related_id) if related_id
+          @belongs_to_riak_#{association_name}
         end
 
         def #{association_name}=(obj)
