@@ -8,8 +8,10 @@ class Artist < RiakRecord::Base
   index_bin_attributes :category
 end
 
-describe RiakRecord::Finder do
+RSpec.shared_examples "riak_record_finder" do
   before :each do
+    RiakRecord::Base.finder_class = described_class
+
     @pop_artists = Array(1..155).map do |c|
       a = Artist.new(c.to_s)
       a.name = "Pop Artist #{c}"
@@ -29,8 +31,8 @@ describe RiakRecord::Finder do
     end
   end
 
-  let(:pop_finder){ RiakRecord::Finder.new(Artist, :category => 'pop') }
-  let(:country_finder){ RiakRecord::Finder.new(Artist, :category => 'country') }
+  let(:pop_finder){ described_class.new(Artist, :category => 'pop') }
+  let(:country_finder){ described_class.new(Artist, :category => 'country') }
 
   describe "all" do
 
@@ -196,4 +198,12 @@ describe RiakRecord::Finder do
 
   end
 
+end
+
+describe RiakRecord::Finder::Basic do
+  it_behaves_like "riak_record_finder"
+end
+
+describe RiakRecord::Finder::ErlangEnhanced do
+  it_behaves_like "riak_record_finder"
 end

@@ -239,13 +239,13 @@ describe RiakRecord::Base do
 
     describe "where" do
       it "should return an instance of RiakRecord::Finder" do
-        expect( ExampleA.where(:index1 => 'hello') ).to be_an_instance_of(RiakRecord::Finder)
+        expect( ExampleA.where(:index1 => 'hello') ).to be_an_instance_of(RiakRecord::Finder::Basic)
       end
     end
 
     describe "finder" do
       it "should return a finder for the bucket" do
-        expect( ExampleB.finder ).to be_an_instance_of(RiakRecord::Finder)
+        expect( ExampleB.finder ).to be_an_instance_of(RiakRecord::Finder::Basic)
       end
 
       describe "uses of class finder" do
@@ -254,7 +254,7 @@ describe RiakRecord::Base do
 
         describe "all" do
           it "should return all the objects in the bucket" do
-            expect(ExampleB.all).to eq [record1, record2]
+            expect(ExampleB.all).to include(record1, record2)
           end
         end
 

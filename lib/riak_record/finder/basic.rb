@@ -1,5 +1,6 @@
 module RiakRecord
-  class Finder
+module Finder
+  class Basic
     include Enumerable
 
     def initialize(finder_class, conditions)
@@ -127,7 +128,7 @@ module RiakRecord
       Riak::MapReduce.new(@finder_class.client).
         index(@bucket, @index, @value).
         map("function(v){ return [1] }", :keep => false).
-        reduce("Riak.reduceSum", :keep => true).run.first
+        reduce(['riak_kv_mapreduce','reduce_sum'], :keep => true).run.first
     end
 
     def load_next_page(page_size = @page_size)
@@ -144,4 +145,5 @@ module RiakRecord
     end
 
   end
+end
 end

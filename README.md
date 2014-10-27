@@ -145,6 +145,15 @@ User.find(1).posts #> create RiakRecord::Finder(Post, :user_id => 1)
 User.find(1).author #> Author.find(self.author_id)
 ```
 
+## Speeding up count, pluck and count_by methods using erlang map reduce functions
+
+Compile riak_record_kv_mapreduce.erl and [install it into your riak nodes](http://docs.basho.com/riak/latest/ops/advanced/install-custom-code/).
+
+```ruby
+RiakRecord::Base.finder_class = RiakRecord::Finder::ErlangEnhanced
+```
+
+
 ## Contributing to riak-record
 
 * Check out the latest master to make sure the feature hasn't been implemented or the bug hasn't been fixed yet.

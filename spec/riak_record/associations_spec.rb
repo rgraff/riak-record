@@ -124,7 +124,7 @@ describe RiakRecord::Associations do
       @comment_for_other_post.save
     end
     it "should return a RiakRecord::Finder" do
-      expect(post.comments).to be_an_instance_of(RiakRecord::Finder)
+      expect(post.comments).to be_an_instance_of(RiakRecord::Finder::Basic)
     end
 
     it "should include the associated records" do

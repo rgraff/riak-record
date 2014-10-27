@@ -108,8 +108,16 @@ module RiakRecord
       @bucket ||= client.bucket(bucket_name)
     end
 
+    def self.finder_class=(klass)
+      @@finder_class = klass
+    end
+
+    def self.finder_class
+      @@finder_class ||= RiakRecord::Finder::Basic
+    end
+
     def self.finder
-      RiakRecord::Finder.new(self, :bucket => bucket_name)
+      finder_class.new(self, :bucket => bucket_name)
     end
 
     def self.all
@@ -124,6 +132,7 @@ module RiakRecord
       finder.first(n)
     end
 
+    # TODO: this is broke
     def self.page(page_number = 1, page_size = 100)
       finder.page(page_number, page_size)
     end
@@ -173,7 +182,7 @@ module RiakRecord
     end
 
     def self.where(options)
-      RiakRecord::Finder.new(self, options)
+      RiakRecord::Finder::Basic.new(self, options)
     end
 
     def self.find(key_or_keys)
