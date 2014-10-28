@@ -119,7 +119,7 @@ DEPENDENCIES
   guard-rspec (~> 4.3.1)
   jeweler (~> 2.0.1)
   rdoc (~> 3.12)
-  riak-client (~> 2.0.0)
+  riak-client (~> 2)
   rspec (~> 3.1.0)
   simplecov
   terminal-notifier-guard

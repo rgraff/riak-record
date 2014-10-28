@@ -1,6 +1,6 @@
 source "http://rubygems.org"
 
-gem "riak-client", "~> 2.0.0"
+gem "riak-client", "~> 2"
 
 group :development do
   gem "rspec", "~> 3.1.0"
