@@ -132,9 +132,8 @@ module RiakRecord
       finder.first(n)
     end
 
-    # TODO: this is broke
-    def self.page(page_number = 1, page_size = 100)
-      finder.page(page_number, page_size)
+    def self.page(continuation = nil, page_size = nil)
+      finder.page(continuation, page_size)
     end
 
     def self.data_attributes(*attributes)
@@ -182,7 +181,7 @@ module RiakRecord
     end
 
     def self.where(options)
-      RiakRecord::Finder::Basic.new(self, options)
+      finder_class.new(self, options)
     end
 
     def self.find(key_or_keys)

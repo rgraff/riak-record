@@ -109,13 +109,7 @@ module Finder
       mr.run
     end
 
-  private
-
-    def load_started?
-      @load_complete || @loaded_objects.count > 0
-    end
-
-    def count_by_map_reduce(attribute)
+    def count_by_map_reduce(attribute, timeout = nil)
       count_by_index = @finder_class.index_names[attribute.to_sym].present?
       parsed_attribute = count_by_index ? "v.values[0].metadata.index.#{@finder_class.index_names[attribute.to_sym]}" : "JSON.parse(v.values[0].data).#{attribute}"
       Riak::MapReduce.new(@finder_class.client).
@@ -124,11 +118,18 @@ module Finder
         reduce("function(values) { var result = {}; for (var value in values) { for (var key in values[value]) { if (key in result) { result[key] += values[value][key]; } else { result[key] = values[value][key]; }}} return [result]; }", :keep => true).run.first
     end
 
-    def count_map_reduce
+    def count_map_reduce(timeout = nil)
       Riak::MapReduce.new(@finder_class.client).
         index(@bucket, @index, @value).
         map("function(v){ return [1] }", :keep => false).
         reduce(['riak_kv_mapreduce','reduce_sum'], :keep => true).run.first
+    end
+
+
+  private
+
+    def load_started?
+      @load_complete || @loaded_objects.count > 0
     end
 
     def load_next_page(page_size = @page_size)
