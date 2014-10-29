@@ -128,6 +128,10 @@ module RiakRecord
       finder.count
     end
 
+    def self.keys
+      finder.keys
+    end
+
     def self.first(n = 1)
       finder.first(n)
     end

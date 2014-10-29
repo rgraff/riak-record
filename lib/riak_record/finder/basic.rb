@@ -31,6 +31,10 @@ module Finder
       all.dup # new array
     end
 
+    def keys
+      @keys ||= Riak::SecondaryIndex.new(@bucket, @index, @value).keys
+    end
+
     def each
       all.each{|o| yield o}
     end
@@ -102,9 +106,7 @@ module Finder
     def pluck_by_map_reduce(attribute, timeout = nil)
       pluck_by_index = @finder_class.index_names[attribute.to_sym].present?
       parsed_attribute = pluck_by_index ? "v.values[0].metadata.index.#{@finder_class.index_names[attribute.to_sym]}" : "JSON.parse(v.values[0].data).#{attribute}"
-      mr = Riak::MapReduce.new(@finder_class.client).
-        index(@bucket, @index, @value).
-        map("function(v){ return [#{parsed_attribute}] }", :keep => true)
+      mr = new_map_reduce.map("function(v){ return [#{parsed_attribute}] }", :keep => true)
       mr.timeout = timeout if timeout.present?
       mr.run
     end
@@ -112,21 +114,25 @@ module Finder
     def count_by_map_reduce(attribute, timeout = nil)
       count_by_index = @finder_class.index_names[attribute.to_sym].present?
       parsed_attribute = count_by_index ? "v.values[0].metadata.index.#{@finder_class.index_names[attribute.to_sym]}" : "JSON.parse(v.values[0].data).#{attribute}"
-      Riak::MapReduce.new(@finder_class.client).
-        index(@bucket, @index, @value).
-        map("function(v){ var h = {}; h[#{parsed_attribute}] = 1; return [h] }", :keep => false).
-        reduce("function(values) { var result = {}; for (var value in values) { for (var key in values[value]) { if (key in result) { result[key] += values[value][key]; } else { result[key] = values[value][key]; }}} return [result]; }", :keep => true).run.first
+      mr = new_map_reduce.map("function(v){ var h = {}; h[#{parsed_attribute}] = 1; return [h] }", :keep => false).
+        reduce("function(values) { var result = {}; for (var value in values) { for (var key in values[value]) { if (key in result) { result[key] += values[value][key]; } else { result[key] = values[value][key]; }}} return [result]; }", :keep => true)
+      mr.timeout = timeout if timeout.present?
+      mr.run.first
     end
 
     def count_map_reduce(timeout = nil)
-      Riak::MapReduce.new(@finder_class.client).
-        index(@bucket, @index, @value).
-        map("function(v){ return [1] }", :keep => false).
-        reduce(['riak_kv_mapreduce','reduce_sum'], :keep => true).run.first
+      mr = new_map_reduce.map("function(v){ return [1] }", :keep => false).
+        reduce(['riak_kv_mapreduce','reduce_sum'], :keep => true)
+      mr.timeout = timeout if timeout.present?
+      mr.run.first
     end
 
 
   private
+
+    def new_map_reduce
+      Riak::MapReduce.new(@finder_class.client).index(@bucket, @index, @value)
+    end
 
     def load_started?
       @load_complete || @loaded_objects.count > 0

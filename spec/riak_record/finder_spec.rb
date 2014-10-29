@@ -40,10 +40,20 @@ RSpec.shared_examples "riak_record_finder" do
       expect( pop_finder.all.map(&:id).sort ).to eq(@pop_artists.map(&:id).sort)
     end
 
-    it "should not return all the record that do not match the conditions" do
+    it "should not return all the records that do not match the conditions" do
       expect( pop_finder.all.map(&:id) ).to_not include(@rock_artists.map(&:id))
     end
 
+  end
+
+  describe "keys" do
+    it "should return all the keys that match the conditions" do
+      expect( pop_finder.keys.sort ).to eq(@pop_artists.map(&:id).sort)
+    end
+
+    it "should not return all the keys that do not match the conditions" do
+      expect( pop_finder.keys ).to_not include(@rock_artists.map(&:id))
+    end
   end
 
   describe "count" do

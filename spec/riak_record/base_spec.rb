@@ -258,6 +258,12 @@ describe RiakRecord::Base do
           end
         end
 
+        describe "keys" do
+          it "should reutrn all the keys in the bucket" do
+            expect(ExampleB.keys).to include("1","2")
+          end
+        end
+
         describe "count" do
           it "should count all objects in the bucket" do
             sleep(2) # wait for riak to collect ghosts
