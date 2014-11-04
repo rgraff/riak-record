@@ -69,9 +69,10 @@ module Finder
     def empty?(&block)
       if block_given?
         !any?(&block)
-      else
-        load_next_page(1) unless load_started?
+      elsif load_started?
         @loaded_objects.count.zero?
+      else
+        Riak::SecondaryIndex.new(@bucket, @index, @value, :max_results => 1).keys.empty?
       end
     end
     alias :none? :empty?
