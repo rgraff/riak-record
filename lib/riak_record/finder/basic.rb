@@ -81,7 +81,7 @@ module Finder
       if block_given?
         return true if @loaded_objects.any? &block
         until @load_complete
-          load_next_page.any? &block
+          return true if load_next_page.any? &block
         end
         false
       else
